@@ -1,0 +1,118 @@
+CREATE TABLE CUST (
+Cust# NUMBER(6),
+CustName VARCHAR2(30) NOT NULL,
+City VARCHAR2(20) NOT NULL,
+Rating CHAR(1),
+Salesrep# NUMBER(7),
+CONSTRAINT cust_cust#_pk PRIMARY KEY (Cust#),
+CONSTRAINT cust_custname_city_uk UNIQUE (CustName, City),
+CONSTRAINT cust_rating_ck CHECK (Rating IN ('A','B', 'C', 'D'))
+);
+
+INSERT INTO CUST (Cust#, CustName, City, Rating, Salesrep#)
+              SELECT 501, 'ABC LTD.', 'Montreal', 'C', 201 FROM DUAL UNION ALL 
+              SELECT 502, 'Black Giant', 'Ottawa', 'B', 202 FROM DUAL UNION ALL
+              SELECT 503, 'Mother Goose', 'London', 'B', 202 FROM DUAL UNION ALL
+              SELECT 701, 'BLUE SKY LTD', 'Vancouver', 'B', 102 FROM DUAL UNION ALL
+              SELECT 702, 'MIKE and SAM inc.', 'Kingston', 'A', 107 FROM DUAL UNION ALL
+              SELECT 703, 'RED PLANET', 'Mississauga', 'C', 107 FROM DUAL UNION ALL
+              SELECT 717, 'BLUE SKY LTD', 'Regina', 'D', 102 FROM DUAL;
+
+
+--1
+
+CREATE TABLE SALESREP 
+(
+RepId,
+FName,
+LName,
+Phone# ,
+Salary ,
+Commission)
+AS SELECT EMPLOYEE_ID, FIRST_NAME, LAST_NAME, PHONE_NUMBER, SALARY, COMMISSION_PCT 
+    FROM EMPLOYEES
+    WHERE DEPARTMENT_ID = 80;
+
+--2
+
+CREATE TABLE GOODCUST(
+CustId,
+Name,
+Location,
+RepId)
+AS SELECT Cust#, CustName, City, Salesrep#
+FROM CUST
+WHERE Rating IN ('A', 'B');
+
+--3
+
+ALTER TABLE SALESREP
+ADD 
+(JobCode VARCHAR2(20));
+
+--4 
+
+ALTER TABLE SALESREP
+MODIFY (Salary NOT NULL);
+
+ALTER TABLE GOODCUST
+MODIFY (Location NULL);
+
+
+--5
+
+SELECT MAX(LENGTH(NAME)) FROM GOODCUST;
+
+ALTER TABLE GOODCUST
+MODIFY (NAME VARCHAR2(17)); 
+
+--6
+
+ALTER TABLE SALESREP
+DROP COLUMN JobCode;
+
+--7
+ALTER TABLE GOODCUST
+MODIFY (CUSTID CONSTRAINT CUSTID_PK PRIMARY KEY);
+
+ALTER TABLE SALESREP
+MODIFY (REPID CONSTRAINT REPID_PK PRIMARY KEY);
+
+--8
+ALTER TABLE GOODCUST
+MODIFY (NAME CONSTRAINT NAME_UK UNIQUE);
+
+ALTER TABLE SALESREP
+MODIFY (PHONE# CONSTRAINT PHONE#_UK UNIQUE);
+
+--9 
+ALTER TABLE SALESREP
+MODIFY (SALARY CONSTRAINT SALARY_CK CHECK (SALARY > 6000 AND SALARY < 12000));
+
+ALTER TABLE SALESREP
+MODIFY (COMMISSION CONSTRAINT COMMISSION_CK CHECK (COMMISSION < 50));
+
+--10
+--This statement failed because  Repid is a primary key which means that it can only accept valid numbers and a specific number
+--can only occur 1 time. In the goodcust table, Repid is a foreign key so the same number can occur multiple times. Salesrep is the parent to Goodcust
+
+--11 No, because you can't input the same number twice because its a primary key
+
+--12 Foreing key was added
+
+--13
+ALTER TABLE GOODCUST
+DROP FOREIGN KEY REPID_FK;
+
+ALTER TABLE SALESREP
+DROP CONSTRAINT SALARY_CK
+ALTER TABLE SALESREP
+MODIFY(SALARY CONSTRAINT SALARY_CK CHECK (SALARY > 5000 AND SALARY < 15000));
+
+DESCRIBE SALESREP;
+DESCRIBE GOODCUST;
+
+SELECT CONSTRAINT_NAME, CONSTRAINT_TYPE, SEARCH_CONDITION, TABLE_NAME 
+FROM USER_CONSTRAINTS 
+WHERE TABLE_NAME IN ('SALESREP', 'GOODCUST')
+ORDER BY 4,2;
